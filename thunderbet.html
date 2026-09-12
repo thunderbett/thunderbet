@@ -1,0 +1,1530 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Thunderbet — Casino</title>
+<style>
+  :root{
+    --bg: #0A0C16;
+    --bg-elevated: #12142200;
+    --surface: #151829;
+    --surface-2: #1D2138;
+    --line: #2A2F4A;
+    --text: #EDEEF7;
+    --text-dim: #8A8FB3;
+    --volt: #F4D03F;
+    --volt-dim: #C9A82E;
+    --violet: #8B6EF5;
+    --win: #34D399;
+    --lose: #F76C82;
+    --radius-card: 14px;
+    --radius-pill: 999px;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:
+      radial-gradient(1200px 600px at 15% -10%, rgba(139,110,245,0.16), transparent 60%),
+      radial-gradient(900px 500px at 90% 0%, rgba(244,208,63,0.10), transparent 55%),
+      var(--bg);
+    color:var(--text);
+    font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    min-height:100vh;
+    line-height:1.4;
+  }
+  @font-face{
+    font-family:'Klavika-fallback'; src:local('Arial Narrow');
+  }
+  h1,h2,h3,.display{
+    font-family: "Archivo Narrow", "Arial Narrow", sans-serif;
+    font-weight:700;
+    letter-spacing:0.2px;
+  }
+
+  /* ---------- Layout shell ---------- */
+  .app{ display:flex; min-height:100vh; }
+
+  .sidebar{
+    width:220px; flex-shrink:0;
+    background:var(--surface);
+    border-right:1px solid var(--line);
+    padding:22px 14px;
+    display:flex; flex-direction:column; gap:26px;
+  }
+  .brand{ display:flex; align-items:center; gap:9px; padding:0 6px; }
+  .brand svg{ width:26px; height:26px; flex-shrink:0; }
+  .brand span{ font-size:20px; font-weight:800; font-family:"Archivo Narrow",sans-serif; }
+  .brand .bolt{ color:var(--volt); }
+
+  .nav-group-label{
+    font-size:11px; color:var(--text-dim); padding:0 10px; margin-bottom:6px;
+  }
+  .nav-list{ display:flex; flex-direction:column; gap:3px; }
+  .nav-item{
+    display:flex; align-items:center; gap:10px;
+    padding:9px 10px; border-radius:10px;
+    color:var(--text-dim); cursor:pointer; font-size:14px; font-weight:600;
+    border:1px solid transparent;
+    transition: background .12s ease, color .12s ease;
+    user-select:none;
+  }
+  .nav-item:hover{ background:var(--surface-2); color:var(--text); }
+  .nav-item.active{ background:var(--surface-2); color:var(--volt); border-color:var(--line); }
+  .nav-item .dot{ width:6px; height:6px; border-radius:50%; background:currentColor; opacity:.7; }
+
+  .sidebar-footer{
+    margin-top:auto; font-size:11.5px; color:var(--text-dim);
+    border-top:1px solid var(--line); padding-top:14px;
+  }
+
+  .main{ flex:1; min-width:0; display:flex; flex-direction:column; }
+
+  .topbar{
+    display:flex; align-items:center; justify-content:space-between;
+    padding:14px 26px;
+    border-bottom:1px solid var(--line);
+    background: rgba(21,24,41,0.6);
+    backdrop-filter: blur(6px);
+    position:sticky; top:0; z-index:5;
+    gap:16px; flex-wrap:wrap;
+  }
+  .page-title{ font-size:19px; }
+  .page-sub{ color:var(--text-dim); font-size:12.5px; margin-top:2px; }
+
+  .balance-cluster{ display:flex; align-items:center; gap:10px; }
+  .balance-chip{
+    display:flex; align-items:center; gap:8px;
+    background:var(--surface-2); border:1px solid var(--line);
+    padding:8px 14px; border-radius:var(--radius-pill);
+  }
+  .balance-chip .amt{ font-weight:800; font-size:15px; letter-spacing:.2px; }
+  .balance-chip .amt.flash{ animation: flashUp .5s ease; }
+  .balance-chip .unit{ color:var(--volt-dim); font-size:12px; font-weight:700; }
+  .balance-chip .cad{ color:var(--text-dim); font-size:11.5px; padding-left:8px; border-left:1px solid var(--line); margin-left:2px; }
+  @keyframes flashUp{ 0%{ transform:scale(1.12); color:var(--win);} 100%{transform:scale(1); color:var(--text);} }
+
+  .btn{
+    border:none; cursor:pointer; font-weight:700; font-family:inherit;
+    border-radius:10px; padding:9px 15px; font-size:13.5px;
+    transition: transform .08s ease, filter .12s ease;
+  }
+  .btn:active{ transform: scale(0.96); }
+  .btn-volt{ background:var(--volt); color:#1B1704; }
+  .btn-volt:hover{ filter:brightness(1.08); }
+  .btn-ghost{ background:var(--surface-2); color:var(--text); border:1px solid var(--line); }
+  .btn-ghost:hover{ background:#242847; }
+  .btn:disabled{ opacity:.45; cursor:not-allowed; }
+
+  .content{ padding:26px; max-width:1180px; width:100%; margin:0 auto; }
+
+  /* ---------- Hero (home) ---------- */
+  .hero{
+    position:relative; overflow:hidden;
+    background:linear-gradient(135deg, #171A30, #10121F 70%);
+    border:1px solid var(--line);
+    border-radius:20px; padding:38px 34px;
+    margin-bottom:26px;
+  }
+  .hero .bolt-bg{
+    position:absolute; right:-30px; top:-40px; width:260px; opacity:.10;
+    transform:rotate(8deg);
+  }
+  .hero h1{ font-size:34px; margin:0 0 8px; max-width:520px; }
+  .hero p{ color:var(--text-dim); max-width:480px; margin:0 0 20px; font-size:14.5px; }
+  .hero .cta-row{ display:flex; gap:10px; flex-wrap:wrap; }
+
+  .grid-games{
+    display:grid; grid-template-columns:repeat(auto-fill, minmax(210px,1fr));
+    gap:16px;
+  }
+  .game-card{
+    background:var(--surface); border:1px solid var(--line);
+    border-radius:var(--radius-card); padding:18px;
+    cursor:pointer; transition: border-color .12s ease, transform .1s ease;
+    display:flex; flex-direction:column; gap:10px; min-height:150px;
+  }
+  .game-card:hover{ border-color:var(--volt-dim); transform:translateY(-2px); }
+  .game-card .icon{ font-size:26px; }
+  .game-card .name{ font-size:16px; font-weight:800; }
+  .game-card .desc{ color:var(--text-dim); font-size:12.5px; flex:1; }
+  .game-card .tag{
+    align-self:flex-start; font-size:10.5px; font-weight:700; color:var(--volt);
+    background:rgba(244,208,63,0.12); padding:3px 8px; border-radius:6px;
+  }
+
+  /* ---------- Game panel shared ---------- */
+  .panel{
+    background:var(--surface); border:1px solid var(--line);
+    border-radius:20px; padding:28px; margin-bottom:20px;
+  }
+  .panel-head{ display:flex; align-items:center; justify-content:space-between; margin-bottom:20px; flex-wrap:wrap; gap:10px;}
+  .panel-head h2{ font-size:22px; margin:0; }
+  .field-label{ font-size:12px; color:var(--text-dim); margin-bottom:6px; font-weight:700; }
+  .bet-controls{ display:flex; gap:10px; align-items:flex-end; flex-wrap:wrap; margin-bottom:22px; }
+  .field{ display:flex; flex-direction:column; }
+  input[type=number]{
+    background:var(--surface-2); border:1px solid var(--line); color:var(--text);
+    padding:10px 12px; border-radius:10px; font-size:14px; width:140px; font-family:inherit; font-weight:700;
+  }
+  input[type=number]:focus{ outline:2px solid var(--volt-dim); }
+  .chip-row{ display:flex; gap:6px; }
+  .chip-btn{
+    background:var(--surface-2); border:1px solid var(--line); color:var(--text-dim);
+    border-radius:8px; padding:7px 10px; font-size:12px; font-weight:700; cursor:pointer;
+  }
+  .chip-btn:hover{ color:var(--text); border-color:var(--volt-dim); }
+
+  .result-strip{ display:flex; gap:8px; flex-wrap:wrap; margin-top:16px; }
+  .result-pill{
+    font-size:11.5px; font-weight:800; padding:5px 10px; border-radius:8px;
+    background:var(--surface-2); border:1px solid var(--line); color:var(--text-dim);
+  }
+  .result-pill.win{ color:var(--win); border-color:rgba(52,211,153,.35); }
+  .result-pill.lose{ color:var(--lose); border-color:rgba(247,108,130,.35); }
+
+  .msg{ margin-top:14px; font-size:14px; font-weight:700; min-height:20px; }
+  .msg.win{ color:var(--win); }
+  .msg.lose{ color:var(--lose); }
+  .msg.info{ color:var(--text-dim); }
+
+  /* Dice */
+  .dice-track{ position:relative; height:44px; background:var(--surface-2); border-radius:999px; margin:18px 0 8px; overflow:hidden; border:1px solid var(--line); }
+  .dice-zone-lose{ position:absolute; inset:0; }
+  .dice-zone-win{ position:absolute; top:0; bottom:0; right:0; background:rgba(52,211,153,0.18); }
+  .dice-marker{ position:absolute; top:-6px; width:3px; height:56px; background:var(--volt); box-shadow:0 0 8px var(--volt); }
+  .dice-result-num{ position:absolute; top:0; bottom:0; display:flex; align-items:center; font-weight:800; font-size:12px; color:#0A0C16; background:#fff; padding:0 8px; border-radius:999px; transform:translateX(-50%); transition: left .4s cubic-bezier(.2,.8,.3,1); }
+  input[type=range]{ width:100%; accent-color: var(--volt); }
+  .slider-row{ margin-bottom:6px; }
+  .stat-row{ display:flex; gap:22px; margin-top:14px; flex-wrap:wrap; }
+  .stat{ font-size:12.5px; color:var(--text-dim); }
+  .stat b{ color:var(--text); font-size:14px; display:block; }
+
+  /* Coinflip */
+  .coin-wrap{ display:flex; flex-direction:column; align-items:center; gap:18px; padding:10px 0 4px; }
+  .coin{
+    width:110px; height:110px; border-radius:50%;
+    background:linear-gradient(145deg, var(--volt), #B8931E);
+    display:flex; align-items:center; justify-content:center;
+    font-weight:900; font-size:14px; color:#1B1704;
+    box-shadow: 0 10px 30px rgba(244,208,63,0.25);
+    transition: transform .5s ease;
+  }
+  .coin.flipping{ animation: coinspin .9s linear; }
+  @keyframes coinspin{ 0%{transform:rotateY(0);} 100%{transform:rotateY(1440deg);} }
+  .side-pick{ display:flex; gap:10px; }
+  .side-btn{
+    flex:1; padding:12px; border-radius:12px; border:1px solid var(--line);
+    background:var(--surface-2); color:var(--text-dim); font-weight:800; cursor:pointer;
+    font-family:inherit; font-size:13.5px;
+  }
+  .side-btn.selected{ border-color:var(--volt); color:var(--volt); background:rgba(244,208,63,0.08); }
+
+  /* Mines */
+  .mines-grid{ display:grid; grid-template-columns:repeat(5, 1fr); gap:8px; max-width:340px; margin:0 auto 18px; }
+  .mine-tile{
+    aspect-ratio:1; border-radius:10px; background:var(--surface-2); border:1px solid var(--line);
+    display:flex; flex-direction:column; align-items:center; justify-content:center; font-size:18px; cursor:pointer;
+    transition: transform .1s ease, background .15s ease;
+  }
+  .mine-tile:hover:not(.revealed){ transform:translateY(-2px); border-color:var(--volt-dim); }
+  .mine-tile.revealed.safe{ background:rgba(52,211,153,0.16); border-color:rgba(52,211,153,.4); cursor:default; }
+  .mine-tile.revealed.bomb{ background:rgba(247,108,130,0.22); border-color:rgba(247,108,130,.5); cursor:default; }
+  .mine-tile.disabled{ pointer-events:none; opacity:.6; }
+  .mine-tile-icon{ font-size:18px; }
+  .mine-tile-val{ font-size:9.5px; font-weight:800; color:var(--win); margin-top:2px; }
+  .mine-tile.revealed.bomb .mine-tile-val{ color:var(--lose); }
+  .mines-hud{ display:flex; justify-content:space-between; gap:14px; flex-wrap:wrap; margin-bottom:16px; }
+
+  /* Crash */
+  .crash-stage{
+    height:220px; background:var(--surface-2); border:1px solid var(--line); border-radius:14px;
+    position:relative; overflow:hidden; margin-bottom:18px;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .crash-mult{ font-size:44px; font-weight:900; font-family:"Archivo Narrow",sans-serif; }
+  .crash-mult.live{ color:var(--volt); }
+  .crash-mult.crashed{ color:var(--lose); }
+  .crash-mult.cashed{ color:var(--win); }
+  .crash-line{
+    position:absolute; left:0; bottom:0; height:3px; background:var(--volt);
+    width:0%; transition:width .05s linear; box-shadow:0 0 10px var(--volt);
+  }
+  .history-row{ display:flex; gap:6px; flex-wrap:wrap; margin-bottom:14px; }
+  .history-chip{ font-size:11px; font-weight:800; padding:4px 8px; border-radius:6px; background:var(--surface-2); border:1px solid var(--line); }
+  .history-chip.up{ color:var(--win); }
+  .history-chip.down{ color:var(--lose); }
+
+  .footer-note{
+    text-align:center; color:var(--text-dim); font-size:11.5px; padding:24px 20px 34px;
+  }
+  .footer-note b{ color:var(--text); }
+
+  /* Add chips modal */
+  .modal-overlay{
+    position:fixed; inset:0; background:rgba(6,7,14,0.7); backdrop-filter:blur(3px);
+    display:none; align-items:center; justify-content:center; z-index:50; padding:16px;
+  }
+  .modal-overlay.open{ display:flex; }
+  .modal-card{
+    background:var(--surface); border:1px solid var(--line); border-radius:18px;
+    padding:26px; width:100%; max-width:340px;
+  }
+  .modal-card h3{ margin:0 0 4px; font-size:18px; }
+  .modal-card .modal-sub{ color:var(--text-dim); font-size:12.5px; margin-bottom:18px; }
+  .modal-amount-row{ display:flex; align-items:center; gap:8px; margin-bottom:6px; }
+  .modal-amount-row input[type=number]{ flex:1; width:auto; font-size:16px; }
+  .modal-cad-preview{ font-size:13px; color:var(--volt); font-weight:700; margin-bottom:16px; }
+  .modal-quick-row{ display:flex; gap:6px; margin-bottom:18px; flex-wrap:wrap; }
+  .modal-actions{ display:flex; gap:10px; }
+  .modal-actions .btn{ flex:1; }
+
+  /* Towers */
+  .tower-setup{ display:flex; gap:10px; flex-wrap:wrap; align-items:flex-end; margin-bottom:20px; }
+  .diff-pick{ display:flex; gap:8px; }
+  .diff-btn{
+    padding:9px 14px; border-radius:10px; border:1px solid var(--line); background:var(--surface-2);
+    color:var(--text-dim); font-weight:800; font-size:12.5px; cursor:pointer; font-family:inherit;
+  }
+  .diff-btn.selected{ border-color:var(--volt); color:var(--volt); background:rgba(244,208,63,0.08); }
+  .tower-board{ display:flex; flex-direction:column-reverse; gap:8px; max-width:420px; margin:0 auto 18px; }
+  .tower-row{ display:flex; gap:8px; justify-content:center; opacity:.4; transition:opacity .15s ease; }
+  .tower-row.active{ opacity:1; }
+  .tower-row.cleared{ opacity:.75; }
+  .tower-tile{
+    width:74px; height:52px; border-radius:10px; background:var(--surface-2); border:1px solid var(--line);
+    display:flex; flex-direction:column; align-items:center; justify-content:center; font-size:16px; cursor:pointer;
+    transition: transform .1s ease, background .15s ease;
+  }
+  .tower-tile-icon{ font-size:15px; line-height:1; }
+  .tower-tile-val{ font-size:9.5px; font-weight:800; color:var(--text-dim); margin-top:2px; }
+  .tower-row.active .tower-tile .tower-tile-val{ color:var(--volt); }
+  .tower-tile.safe .tower-tile-val{ color:var(--win); }
+  .tower-tile.bomb .tower-tile-val{ color:var(--lose); }
+  .tower-row.active .tower-tile:hover{ transform:translateY(-2px); border-color:var(--volt-dim); }
+  .tower-tile.locked{ cursor:default; }
+  .tower-tile.safe{ background:rgba(52,211,153,0.18); border-color:rgba(52,211,153,.4); cursor:default; }
+  .tower-tile.bomb{ background:rgba(247,108,130,0.22); border-color:rgba(247,108,130,.5); cursor:default; }
+  .tower-row-label{ width:44px; display:flex; align-items:center; justify-content:center; color:var(--text-dim); font-size:11px; font-weight:800; }
+
+  /* Cases */
+  .case-grid{ display:grid; grid-template-columns:repeat(auto-fill, minmax(190px,1fr)); gap:16px; margin-bottom:24px; }
+  .case-card{
+    background:var(--surface); border:1px solid var(--line); border-radius:16px; padding:18px;
+    display:flex; flex-direction:column; gap:10px; cursor:pointer; transition:border-color .12s ease, transform .1s ease;
+  }
+  .case-card:hover{ border-color:var(--volt-dim); transform:translateY(-2px); }
+  .case-card.selected{ border-color:var(--volt); background:rgba(244,208,63,0.06); }
+  .case-icon{ font-size:30px; }
+  .case-name{ font-weight:800; font-size:15px; }
+  .case-price{ font-size:13px; color:var(--volt); font-weight:800; }
+  .case-price .cad{ color:var(--text-dim); font-weight:600; font-size:11.5px; }
+  .case-range{ font-size:11.5px; color:var(--text-dim); }
+
+  .reel-wrap{ position:relative; height:130px; overflow:hidden; border-radius:14px; background:var(--surface-2); border:1px solid var(--line); margin-bottom:18px; }
+  .reel-marker{ position:absolute; left:50%; top:0; bottom:0; width:2px; background:var(--volt); box-shadow:0 0 10px var(--volt); z-index:2; transform:translateX(-50%); }
+  .reel-track{ position:absolute; top:0; left:0; display:flex; height:100%; will-change:transform; }
+  .reel-item{
+    width:120px; height:100%; flex-shrink:0; display:flex; flex-direction:column; align-items:center; justify-content:center;
+    gap:6px; border-right:1px solid var(--line);
+  }
+  .reel-item .ri-icon{ font-size:26px; }
+  .reel-item .ri-name{ font-size:10.5px; color:var(--text-dim); text-align:center; padding:0 6px; }
+  .reel-item .ri-value{ font-size:11px; font-weight:800; }
+  .reel-item.rare .ri-value{ color:var(--volt); }
+  .reel-item.epic .ri-value{ color:var(--violet); }
+
+  .case-result{
+    text-align:center; padding:14px; border-radius:12px; background:var(--surface-2); border:1px solid var(--line);
+    margin-bottom:16px; display:none;
+  }
+  .case-result.show{ display:block; }
+  .case-result .cr-name{ font-weight:800; font-size:16px; }
+  .case-result .cr-value{ color:var(--win); font-weight:800; margin-top:4px; }
+  .case-result .cr-cad{ color:var(--text-dim); font-size:12px; }
+
+  .item-pool-table{ width:100%; border-collapse:collapse; font-size:12.5px; }
+  .item-pool-table th{ text-align:left; color:var(--text-dim); font-weight:700; padding:6px 8px; border-bottom:1px solid var(--line); }
+  .item-pool-table td{ padding:7px 8px; border-bottom:1px solid var(--line); }
+  .item-pool-table .odds{ color:var(--text-dim); }
+
+  @media (max-width: 760px){
+    .sidebar{ display:none; }
+    .content{ padding:16px; }
+    .panel{ padding:18px; }
+    .hero{ padding:24px 18px; }
+    .hero h1{ font-size:26px; }
+  }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <aside class="sidebar">
+    <div class="brand">
+      <svg class="bolt" viewBox="0 0 24 24" fill="currentColor"><path d="M13 2 3 14h6l-1 8 10-13h-6l1-7z"/></svg>
+      <span>THUNDER<span class="bolt">BET</span></span>
+    </div>
+
+    <div>
+      <div class="nav-group-label">CASINO</div>
+      <div class="nav-list">
+        <div class="nav-item active" data-route="home"><span class="dot"></span> Home</div>
+        <div class="nav-item" data-route="dice"><span class="dot"></span> Dice</div>
+        <div class="nav-item" data-route="coinflip"><span class="dot"></span> Coinflip</div>
+        <div class="nav-item" data-route="mines"><span class="dot"></span> Mines</div>
+        <div class="nav-item" data-route="crash"><span class="dot"></span> Crash</div>
+        <div class="nav-item" data-route="towers"><span class="dot"></span> Towers</div>
+        <div class="nav-item" data-route="cases"><span class="dot"></span> Cases</div>
+      </div>
+    </div>
+
+    <div class="sidebar-footer">
+      Instant deposits.<br>Play anytime, anywhere.
+    </div>
+  </aside>
+
+  <main class="main">
+    <div class="topbar">
+      <div>
+        <div class="page-title" id="pageTitle">Home</div>
+        <div class="page-sub" id="pageSub">Welcome back.</div>
+      </div>
+      <div class="balance-cluster">
+        <div class="balance-chip">
+          <span class="unit">◆</span>
+          <span class="amt" id="balanceDisplay">10,000</span>
+          <span class="unit">TC</span>
+          <span class="cad" id="balanceCad">$100.00 CAD</span>
+        </div>
+        <button class="btn btn-ghost" id="topUpBtn">+ Add chips</button>
+      </div>
+    </div>
+
+    <div class="content" id="content"></div>
+
+    <div class="footer-note">
+      <b>Thunderbet</b> · Chip value: 1 CAD = 100 TC
+    </div>
+  </main>
+</div>
+
+<div class="modal-overlay" id="addChipsModal">
+  <div class="modal-card">
+    <h3>Add Thunder Chips</h3>
+    <div class="modal-sub">Choose an amount to deposit.</div>
+    <div class="field-label">Amount to add</div>
+    <div class="modal-amount-row">
+      <input type="number" id="addChipsInput" min="1" step="1" value="5000">
+      <span class="unit">TC</span>
+    </div>
+    <div class="modal-cad-preview" id="addChipsCadPreview">$50.00 CAD</div>
+    <div class="modal-quick-row">
+      <button class="chip-btn" data-quick="1000">1,000</button>
+      <button class="chip-btn" data-quick="5000">5,000</button>
+      <button class="chip-btn" data-quick="25000">25,000</button>
+      <button class="chip-btn" data-quick="100000">100,000</button>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" id="cancelAddChips">Cancel</button>
+      <button class="btn btn-volt" id="confirmAddChips">Add chips</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ---------------- State ---------------- */
+const state = {
+  balance: 10000,
+  route: 'home',
+  crashHistory: [],
+};
+
+const fmt = n => Math.round(n).toLocaleString();
+const CHIPS_PER_CAD = 100;
+const chipsToCad = chips => (chips / CHIPS_PER_CAD).toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2});
+
+function setBalance(newVal, opts={}){
+  state.balance = Math.max(0, newVal);
+  const el = document.getElementById('balanceDisplay');
+  el.textContent = fmt(state.balance);
+  const cadEl = document.getElementById('balanceCad');
+  if(cadEl) cadEl.textContent = `$${chipsToCad(state.balance)} CAD`;
+  if(opts.flash){
+    el.classList.remove('flash');
+    void el.offsetWidth;
+    el.classList.add('flash');
+  }
+  persist();
+}
+
+function persist(){
+  try{
+    if(window.storage && window.storage.set){
+      window.storage.set('thunderbet:balance', String(Math.round(state.balance)), false).catch(()=>{});
+    }
+  }catch(e){}
+}
+
+async function loadPersisted(){
+  try{
+    if(window.storage && window.storage.get){
+      const res = await window.storage.get('thunderbet:balance', false);
+      if(res && res.value){
+        const v = parseFloat(res.value);
+        if(!isNaN(v)) state.balance = v;
+      }
+    }
+  }catch(e){ /* no saved balance yet */ }
+  setBalance(state.balance);
+}
+
+document.getElementById('topUpBtn').addEventListener('click', ()=>{
+  const modal = document.getElementById('addChipsModal');
+  const input = document.getElementById('addChipsInput');
+  input.value = 5000;
+  updateAddChipsPreview();
+  modal.classList.add('open');
+  input.focus();
+  input.select();
+});
+
+function updateAddChipsPreview(){
+  const input = document.getElementById('addChipsInput');
+  const preview = document.getElementById('addChipsCadPreview');
+  const val = Math.max(0, Math.floor(parseFloat(input.value)) || 0);
+  preview.textContent = `$${chipsToCad(val)} CAD`;
+}
+
+document.getElementById('addChipsInput').addEventListener('input', updateAddChipsPreview);
+
+document.querySelectorAll('#addChipsModal .chip-btn[data-quick]').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    document.getElementById('addChipsInput').value = btn.dataset.quick;
+    updateAddChipsPreview();
+  });
+});
+
+function closeAddChipsModal(){
+  document.getElementById('addChipsModal').classList.remove('open');
+}
+document.getElementById('cancelAddChips').addEventListener('click', closeAddChipsModal);
+document.getElementById('addChipsModal').addEventListener('click', (e)=>{
+  if(e.target.id === 'addChipsModal') closeAddChipsModal();
+});
+document.getElementById('confirmAddChips').addEventListener('click', ()=>{
+  const input = document.getElementById('addChipsInput');
+  const val = Math.floor(parseFloat(input.value));
+  if(!val || val <= 0) return;
+  setBalance(state.balance + val, {flash:true});
+  closeAddChipsModal();
+});
+
+/* ---------------- Router ---------------- */
+const titles = {
+  home: ['Home', 'Welcome back.'],
+  dice: ['Dice', 'Pick a target, choose your risk.'],
+  coinflip: ['Coinflip', 'Call heads or tails.'],
+  mines: ['Mines', 'Clear tiles, cash out before you hit one.'],
+  crash: ['Crash', 'Cash out before the curve drops.'],
+  towers: ['Towers', 'Climb the tower, avoid the trap tile.'],
+  cases: ['Cases', 'Open a case and land on an item.'],
+};
+
+document.querySelectorAll('.nav-item').forEach(item=>{
+  item.addEventListener('click', ()=> navigate(item.dataset.route));
+});
+
+function navigate(route){
+  state.route = route;
+  document.querySelectorAll('.nav-item').forEach(i=> i.classList.toggle('active', i.dataset.route === route));
+  document.getElementById('pageTitle').textContent = titles[route][0];
+  document.getElementById('pageSub').textContent = titles[route][1];
+  render();
+}
+
+function render(){
+  const c = document.getElementById('content');
+  if(state.route === 'home') c.innerHTML = homeView();
+  if(state.route === 'dice'){ c.innerHTML = diceView(); initDice(); }
+  if(state.route === 'coinflip'){ c.innerHTML = coinflipView(); initCoinflip(); }
+  if(state.route === 'mines'){ c.innerHTML = minesView(); initMines(); }
+  if(state.route === 'crash'){ c.innerHTML = crashView(); initCrash(); }
+  if(state.route === 'towers'){ c.innerHTML = towersView(); initTowers(); }
+  if(state.route === 'cases'){ c.innerHTML = casesView(); initCases(); }
+
+  if(state.route === 'home'){
+    c.querySelectorAll('.game-card').forEach(card=>{
+      card.addEventListener('click', ()=> navigate(card.dataset.route));
+    });
+  }
+}
+
+/* ---------------- Home ---------------- */
+function homeView(){
+  return `
+    <div class="hero">
+      <svg class="bolt-bg" viewBox="0 0 24 24" fill="var(--volt)"><path d="M13 2 3 14h6l-1 8 10-13h-6l1-7z"/></svg>
+      <h1>All the thrill, none of the stakes.</h1>
+      <p>Thunderbet runs entirely on Thunder Chips — a made-up currency that resets whenever you like. Nothing here is real money, and nothing you win can be cashed out.</p>
+      <div class="cta-row">
+        <button class="btn btn-volt" onclick="navigate('dice')">Play Dice</button>
+        <button class="btn btn-ghost" onclick="document.getElementById('topUpBtn').click()">Top up chips</button>
+      </div>
+    </div>
+    <div class="grid-games">
+      <div class="game-card" data-route="dice">
+        <div class="icon">🎲</div>
+        <div class="name">Dice</div>
+        <div class="desc">Set a target and a direction. Tighter range, bigger payout.</div>
+        <div class="tag">Provably arbitrary</div>
+      </div>
+      <div class="game-card" data-route="coinflip">
+        <div class="icon">🪙</div>
+        <div class="name">Coinflip</div>
+        <div class="desc">Call it in the air. Straightforward 50/50, near-even payout.</div>
+        <div class="tag">Quick round</div>
+      </div>
+      <div class="game-card" data-route="mines">
+        <div class="icon">💣</div>
+        <div class="name">Mines</div>
+        <div class="desc">Reveal tiles on a 5×5 board. Cash out before you find a mine.</div>
+        <div class="tag">Push your luck</div>
+      </div>
+      <div class="game-card" data-route="crash">
+        <div class="icon">📈</div>
+        <div class="name">Crash</div>
+        <div class="desc">A multiplier climbs from 1.00x. Cash out before it drops.</div>
+        <div class="tag">Timing game</div>
+      </div>
+      <div class="game-card" data-route="towers">
+        <div class="icon">🗼</div>
+        <div class="name">Towers</div>
+        <div class="desc">Climb row by row. One wrong tile ends the run.</div>
+        <div class="tag">Push your luck</div>
+      </div>
+      <div class="game-card" data-route="cases">
+        <div class="icon">🎁</div>
+        <div class="name">Cases</div>
+        <div class="desc">Open a case and land on a watch or a car worth chips.</div>
+        <div class="tag">Case roll</div>
+      </div>
+    </div>
+  `;
+}
+
+/* ---------------- Shared bet input helper ---------------- */
+function betControlsHtml(id, defaultVal=100){
+  return `
+    <div class="field">
+      <div class="field-label">Bet amount</div>
+      <input type="number" id="${id}" min="1" step="1" value="${defaultVal}">
+      <div class="chip-row" style="margin-top:8px;">
+        <button class="chip-btn" data-mult="0.5">½</button>
+        <button class="chip-btn" data-mult="2">2×</button>
+        <button class="chip-btn" data-set="max">Max</button>
+      </div>
+    </div>
+  `;
+}
+function wireChipButtons(scopeEl, inputId){
+  scopeEl.querySelectorAll('.chip-btn').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      const input = document.getElementById(inputId);
+      let val = parseFloat(input.value) || 0;
+      if(btn.dataset.mult) val = Math.max(1, Math.round(val * parseFloat(btn.dataset.mult)));
+      if(btn.dataset.set === 'max') val = Math.max(1, Math.floor(state.balance));
+      input.value = val;
+    });
+  });
+}
+function getBet(inputId, msgId){
+  const input = document.getElementById(inputId);
+  let bet = Math.floor(parseFloat(input.value));
+  const msg = document.getElementById(msgId);
+  if(!bet || bet <= 0){ msg.textContent = 'Enter a valid bet amount.'; msg.className='msg lose'; return null; }
+  if(bet > state.balance){ msg.textContent = "You don't have enough chips for that bet."; msg.className='msg lose'; return null; }
+  return bet;
+}
+
+/* ---------------- Dice ---------------- */
+function diceView(){
+  return `
+    <div class="panel">
+      <div class="panel-head">
+        <h2>🎲 Dice</h2>
+        <div class="stat">Win chance updates live as you drag the slider.</div>
+      </div>
+      <div class="bet-controls">
+        ${betControlsHtml('diceBet', 100)}
+        <div class="field">
+          <div class="field-label">Direction</div>
+          <div class="side-pick" style="width:180px;">
+            <button class="side-btn selected" id="diceUnder">Roll Under</button>
+            <button class="side-btn" id="diceOver">Roll Over</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="slider-row">
+        <div class="field-label">Target: <span id="diceTargetLabel">50.00</span></div>
+        <input type="range" id="diceSlider" min="2" max="98" value="50" step="0.5">
+      </div>
+
+      <div class="dice-track">
+        <div class="dice-zone-lose"></div>
+        <div class="dice-zone-win" id="diceZoneWin"></div>
+        <div class="dice-marker" id="diceMarker"></div>
+        <div class="dice-result-num" id="diceResultNum" style="left:-999px;">--</div>
+      </div>
+
+      <div class="stat-row">
+        <div class="stat">Win chance<b id="diceChance">49.00%</b></div>
+        <div class="stat">Payout multiplier<b id="diceMultiplier">2.0198x</b></div>
+        <div class="stat">Profit on win<b id="diceProfit">+99.99</b></div>
+      </div>
+
+      <div style="margin-top:20px;">
+        <button class="btn btn-volt" id="diceRollBtn" style="width:100%; padding:13px;">Roll</button>
+      </div>
+      <div class="msg info" id="diceMsg"></div>
+      <div class="result-strip" id="diceHistory"></div>
+    </div>
+  `;
+}
+
+function initDice(){
+  const scope = document.getElementById('content');
+  wireChipButtons(scope, 'diceBet');
+  let direction = 'under'; // or 'over'
+  const slider = document.getElementById('diceSlider');
+  const underBtn = document.getElementById('diceUnder');
+  const overBtn = document.getElementById('diceOver');
+  const targetLabel = document.getElementById('diceTargetLabel');
+  const chanceEl = document.getElementById('diceChance');
+  const multEl = document.getElementById('diceMultiplier');
+  const profitEl = document.getElementById('diceProfit');
+  const zoneWin = document.getElementById('diceZoneWin');
+  const marker = document.getElementById('diceMarker');
+  const HOUSE_EDGE = 0.99; // payout scaling to keep it non-favorable long-run, like real dice games
+
+  function updateOdds(){
+    const target = parseFloat(slider.value);
+    targetLabel.textContent = target.toFixed(2);
+    let chance;
+    if(direction === 'under'){
+      chance = target; // roll 0-100, win if roll < target
+      zoneWin.style.left = '0%'; zoneWin.style.right = (100-target)+'%'; zoneWin.style.width='';
+      zoneWin.style.right = '';
+      zoneWin.style.width = target + '%';
+      marker.style.left = target + '%';
+      zoneWin.style.left = '0';
+    } else {
+      chance = 100 - target;
+      zoneWin.style.width = (100-target) + '%';
+      zoneWin.style.left = target + '%';
+      marker.style.left = target + '%';
+    }
+    chance = Math.max(1, Math.min(97, chance));
+    const mult = (HOUSE_EDGE * 100 / chance);
+    chanceEl.textContent = chance.toFixed(2) + '%';
+    multEl.textContent = mult.toFixed(4) + 'x';
+    const bet = parseFloat(document.getElementById('diceBet').value) || 0;
+    profitEl.textContent = (bet*mult - bet >= 0 ? '+' : '') + (bet*mult - bet).toFixed(2);
+    return {target, chance, mult};
+  }
+
+  slider.addEventListener('input', updateOdds);
+  document.getElementById('diceBet').addEventListener('input', updateOdds);
+  underBtn.addEventListener('click', ()=>{ direction='under'; underBtn.classList.add('selected'); overBtn.classList.remove('selected'); updateOdds(); });
+  overBtn.addEventListener('click', ()=>{ direction='over'; overBtn.classList.add('selected'); underBtn.classList.remove('selected'); updateOdds(); });
+
+  updateOdds();
+
+  document.getElementById('diceRollBtn').addEventListener('click', ()=>{
+    const bet = getBet('diceBet','diceMsg');
+    if(bet === null) return;
+    const {target, mult} = updateOdds();
+    const roll = +(Math.random()*100).toFixed(2);
+    const resultNum = document.getElementById('diceResultNum');
+    resultNum.style.left = roll + '%';
+    resultNum.textContent = roll.toFixed(2);
+
+    const won = direction === 'under' ? roll < target : roll > target;
+    const msg = document.getElementById('diceMsg');
+    setBalance(state.balance - bet);
+    if(won){
+      const payout = bet * mult;
+      setBalance(state.balance + payout, {flash:true});
+      msg.textContent = `Rolled ${roll.toFixed(2)} — won ${fmt(payout - bet)} TC`;
+      msg.className = 'msg win';
+    } else {
+      msg.textContent = `Rolled ${roll.toFixed(2)} — lost ${fmt(bet)} TC`;
+      msg.className = 'msg lose';
+    }
+    addHistory('diceHistory', won);
+  });
+}
+
+function addHistory(containerId, won, label){
+  const hist = document.getElementById(containerId);
+  if(!hist) return;
+  const pill = document.createElement('div');
+  pill.className = 'result-pill ' + (won ? 'win' : 'lose');
+  pill.textContent = label || (won ? 'WIN' : 'LOSS');
+  hist.prepend(pill);
+  while(hist.children.length > 12) hist.removeChild(hist.lastChild);
+}
+
+/* ---------------- Coinflip ---------------- */
+function coinflipView(){
+  return `
+    <div class="panel">
+      <div class="panel-head">
+        <h2>🪙 Coinflip</h2>
+        <div class="stat">1.98x payout on a correct call.</div>
+      </div>
+      <div class="bet-controls">
+        ${betControlsHtml('coinBet', 100)}
+        <div class="field">
+          <div class="field-label">Your call</div>
+          <div class="side-pick" style="width:200px;">
+            <button class="side-btn selected" id="pickHeads">Heads</button>
+            <button class="side-btn" id="pickTails">Tails</button>
+          </div>
+        </div>
+      </div>
+      <div class="coin-wrap">
+        <div class="coin" id="coinEl">?</div>
+        <button class="btn btn-volt" id="flipBtn" style="padding:12px 40px;">Flip</button>
+      </div>
+      <div class="stat-row" style="justify-content:center;">
+        <div class="stat">Payout multiplier<b>1.98x</b></div>
+        <div class="stat">Profit on win<b id="coinProfit">+98</b></div>
+      </div>
+      <div class="msg info" id="coinMsg" style="text-align:center;"></div>
+      <div class="result-strip" id="coinHistory" style="justify-content:center;"></div>
+    </div>
+  `;
+}
+function initCoinflip(){
+  const scope = document.getElementById('content');
+  wireChipButtons(scope, 'coinBet');
+  let pick = 'heads';
+  const headsBtn = document.getElementById('pickHeads');
+  const tailsBtn = document.getElementById('pickTails');
+  headsBtn.addEventListener('click', ()=>{ pick='heads'; headsBtn.classList.add('selected'); tailsBtn.classList.remove('selected'); });
+  tailsBtn.addEventListener('click', ()=>{ pick='tails'; tailsBtn.classList.add('selected'); headsBtn.classList.remove('selected'); });
+
+  function updateCoinProfit(){
+    const bet = parseFloat(document.getElementById('coinBet').value) || 0;
+    document.getElementById('coinProfit').textContent = '+' + fmt(bet*1.98 - bet);
+  }
+  document.getElementById('coinBet').addEventListener('input', updateCoinProfit);
+  updateCoinProfit();
+
+  document.getElementById('flipBtn').addEventListener('click', ()=>{
+    const bet = getBet('coinBet','coinMsg');
+    if(bet === null) return;
+    const coinEl = document.getElementById('coinEl');
+    const btn = document.getElementById('flipBtn');
+    btn.disabled = true;
+    coinEl.classList.add('flipping');
+    setBalance(state.balance - bet);
+
+    setTimeout(()=>{
+      coinEl.classList.remove('flipping');
+      const outcome = Math.random() < 0.5 ? 'heads' : 'tails';
+      coinEl.textContent = outcome.toUpperCase();
+      const won = outcome === pick;
+      const msg = document.getElementById('coinMsg');
+      if(won){
+        const payout = bet * 1.98;
+        setBalance(state.balance + payout, {flash:true});
+        msg.textContent = `It's ${outcome} — you won ${fmt(payout-bet)} TC`;
+        msg.className = 'msg win';
+      } else {
+        msg.textContent = `It's ${outcome} — you lost ${fmt(bet)} TC`;
+        msg.className = 'msg lose';
+      }
+      addHistory('coinHistory', won, outcome.toUpperCase());
+      btn.disabled = false;
+    }, 900);
+  });
+}
+
+/* ---------------- Mines ---------------- */
+let minesState = null;
+function minesView(){
+  return `
+    <div class="panel">
+      <div class="panel-head">
+        <h2>💣 Mines</h2>
+        <div class="stat">Pick how many mines. More mines, higher payout per safe tile.</div>
+      </div>
+      <div class="bet-controls">
+        ${betControlsHtml('minesBet', 100)}
+        <div class="field">
+          <div class="field-label">Mine count</div>
+          <input type="number" id="mineCount" min="1" max="24" value="3" style="width:100px;">
+        </div>
+        <button class="btn btn-volt" id="minesStartBtn">Start round</button>
+        <button class="btn btn-ghost" id="minesCashoutBtn" disabled>Cash out</button>
+      </div>
+      <div class="mines-hud">
+        <div class="stat">Current multiplier<b id="minesMult">1.00x</b></div>
+        <div class="stat">Tiles cleared<b id="minesCleared">0</b></div>
+        <div class="stat">Potential payout<b id="minesPotential">0</b></div>
+        <div class="stat">Profit so far<b id="minesProfit">0</b></div>
+      </div>
+      <div class="mines-grid" id="minesGrid"></div>
+      <div class="msg info" id="minesMsg"></div>
+    </div>
+  `;
+}
+function initMines(){
+  const scope = document.getElementById('content');
+  wireChipButtons(scope, 'minesBet');
+  const grid = document.getElementById('minesGrid');
+  const startBtn = document.getElementById('minesStartBtn');
+  const cashoutBtn = document.getElementById('minesCashoutBtn');
+
+  function buildEmptyGrid(){
+    grid.innerHTML = '';
+    for(let i=0;i<25;i++){
+      const tile = document.createElement('div');
+      tile.className = 'mine-tile disabled';
+      tile.textContent = '';
+      tile.dataset.idx = i;
+      grid.appendChild(tile);
+    }
+  }
+  buildEmptyGrid();
+
+  startBtn.addEventListener('click', ()=>{
+    const bet = getBet('minesBet','minesMsg');
+    if(bet === null) return;
+    const mineCount = Math.max(1, Math.min(24, Math.floor(parseFloat(document.getElementById('mineCount').value)||3)));
+    setBalance(state.balance - bet);
+
+    const positions = Array.from({length:25}, (_,i)=>i);
+    const mines = new Set();
+    while(mines.size < mineCount){
+      mines.add(positions[Math.floor(Math.random()*25)]);
+    }
+    minesState = { bet, mineCount, mines, cleared:0, alive:true };
+
+    grid.innerHTML = '';
+    for(let i=0;i<25;i++){
+      const tile = document.createElement('div');
+      tile.className = 'mine-tile';
+      tile.dataset.idx = i;
+      tile.addEventListener('click', onTileClick);
+      grid.appendChild(tile);
+    }
+    startBtn.disabled = true;
+    cashoutBtn.disabled = false;
+    document.getElementById('minesMsg').textContent = 'Round started — pick a tile.';
+    document.getElementById('minesMsg').className = 'msg info';
+    updateMinesHud();
+  });
+
+  function currentMultiplier(){
+    if(!minesState) return 1;
+    const {mineCount, cleared} = minesState;
+    const safeTotal = 25 - mineCount;
+    if(cleared === 0) return 1;
+    let mult = 1;
+    let safeLeft = safeTotal;
+    let totalLeft = 25;
+    for(let i=0;i<cleared;i++){
+      mult *= (totalLeft / safeLeft) * 0.97;
+      safeLeft--; totalLeft--;
+    }
+    return mult;
+  }
+
+  function updateMinesHud(){
+    const mult = currentMultiplier();
+    const payout = minesState ? minesState.bet * mult : 0;
+    document.getElementById('minesMult').textContent = mult.toFixed(2)+'x';
+    document.getElementById('minesCleared').textContent = minesState ? minesState.cleared : 0;
+    document.getElementById('minesPotential').textContent = fmt(payout);
+    document.getElementById('minesProfit').textContent = minesState ? (minesState.cleared>0 ? '+'+fmt(payout - minesState.bet) : '0') : '0';
+  }
+
+  function onTileClick(e){
+    if(!minesState || !minesState.alive) return;
+    const idx = parseInt(e.currentTarget.dataset.idx);
+    const tile = e.currentTarget;
+    if(tile.classList.contains('revealed')) return;
+
+    if(minesState.mines.has(idx)){
+      // bomb hit - reveal all
+      minesState.alive = false;
+      document.querySelectorAll('.mine-tile').forEach(t=>{
+        const i = parseInt(t.dataset.idx);
+        t.classList.add('revealed');
+        if(minesState.mines.has(i)){ t.classList.add('bomb'); t.innerHTML = '<div class="mine-tile-icon">💣</div>'; }
+        else if(!t.classList.contains('safe')) { t.classList.add('safe'); t.innerHTML = '<div class="mine-tile-icon">💎</div>'; }
+        t.classList.add('disabled');
+      });
+      const msg = document.getElementById('minesMsg');
+      msg.textContent = `Hit a mine — lost ${fmt(minesState.bet)} TC`;
+      msg.className = 'msg lose';
+      startBtn.disabled = false;
+      cashoutBtn.disabled = true;
+      updateMinesHud();
+    } else {
+      minesState.cleared++;
+      const mult = currentMultiplier();
+      const payout = minesState.bet * mult;
+      tile.classList.add('revealed','safe');
+      tile.innerHTML = `<div class="mine-tile-icon">💎</div><div class="mine-tile-val">${fmt(payout)}</div>`;
+      updateMinesHud();
+      if(minesState.cleared === (25 - minesState.mineCount)){
+        // cleared the whole board
+        cashOut();
+      }
+    }
+  }
+
+  function cashOut(){
+    if(!minesState || !minesState.alive || minesState.cleared === 0){
+      document.getElementById('minesMsg').textContent = 'Reveal at least one tile before cashing out.';
+      document.getElementById('minesMsg').className = 'msg info';
+      return;
+    }
+    const mult = currentMultiplier();
+    const payout = minesState.bet * mult;
+    setBalance(state.balance + payout, {flash:true});
+    document.getElementById('minesMsg').textContent = `Cashed out at ${mult.toFixed(2)}x — won ${fmt(payout - minesState.bet)} TC`;
+    document.getElementById('minesMsg').className = 'msg win';
+    document.querySelectorAll('.mine-tile').forEach(t=> t.classList.add('disabled'));
+    minesState.alive = false;
+    startBtn.disabled = false;
+    cashoutBtn.disabled = true;
+  }
+
+  cashoutBtn.addEventListener('click', cashOut);
+}
+
+/* ---------------- Crash ---------------- */
+let crashState = null;
+function crashView(){
+  const historyHtml = state.crashHistory.slice(0,14).map(v=>
+    `<div class="history-chip ${v>=2?'up':'down'}">${v.toFixed(2)}x</div>`
+  ).join('');
+  return `
+    <div class="panel">
+      <div class="panel-head">
+        <h2>📈 Crash</h2>
+        <div class="stat">Multiplier climbs from 1.00x until it randomly stops. Cash out any time.</div>
+      </div>
+      <div class="history-row">${historyHtml}</div>
+      <div class="crash-stage">
+        <div class="crash-mult" id="crashMult">1.00x</div>
+        <div class="crash-line" id="crashLine"></div>
+      </div>
+      <div class="stat-row" style="margin-bottom:16px;">
+        <div class="stat">Live multiplier<b id="crashLiveMult">1.00x</b></div>
+        <div class="stat">Profit if cashed now<b id="crashLiveProfit">0</b></div>
+      </div>
+      <div class="bet-controls">
+        ${betControlsHtml('crashBet', 100)}
+        <button class="btn btn-volt" id="crashStartBtn">Place bet &amp; start</button>
+        <button class="btn btn-ghost" id="crashCashoutBtn" disabled>Cash out</button>
+      </div>
+      <div class="msg info" id="crashMsg"></div>
+    </div>
+  `;
+}
+function initCrash(){
+  const scope = document.getElementById('content');
+  wireChipButtons(scope, 'crashBet');
+  const startBtn = document.getElementById('crashStartBtn');
+  const cashoutBtn = document.getElementById('crashCashoutBtn');
+  const multEl = document.getElementById('crashMult');
+  const lineEl = document.getElementById('crashLine');
+
+  function sampleCrashPoint(){
+    // Heavier weight toward low multipliers, occasional big runs - like typical crash games.
+    const r = Math.random();
+    const crashAt = Math.max(1.00, (0.97 / (1 - r)) * 0.99);
+    return Math.min(crashAt, 100);
+  }
+
+  startBtn.addEventListener('click', ()=>{
+    const bet = getBet('crashBet','crashMsg');
+    if(bet === null) return;
+    setBalance(state.balance - bet);
+    const crashPoint = sampleCrashPoint();
+    crashState = { bet, cashed:false, running:true, mult:1.0 };
+    startBtn.disabled = true;
+    cashoutBtn.disabled = false;
+    document.getElementById('crashMsg').textContent = 'Climbing...';
+    document.getElementById('crashMsg').className = 'msg info';
+    multEl.className = 'crash-mult live';
+
+    const startTime = performance.now();
+    function tick(now){
+      if(!crashState || !crashState.running) return;
+      const elapsed = (now - startTime) / 1000;
+      const mult = 1 + Math.pow(elapsed, 1.55) * 0.55;
+      crashState.mult = mult;
+      multEl.textContent = mult.toFixed(2) + 'x';
+      document.getElementById('crashLiveMult').textContent = mult.toFixed(2) + 'x';
+      document.getElementById('crashLiveProfit').textContent = '+' + fmt(bet*mult - bet);
+      lineEl.style.width = Math.min(100, (mult-1)/ (crashPoint-1+0.001) * 100) + '%';
+
+      if(mult >= crashPoint){
+        crashState.running = false;
+        multEl.textContent = crashPoint.toFixed(2) + 'x';
+        multEl.className = 'crash-mult crashed';
+        state.crashHistory.unshift(crashPoint);
+        if(!crashState.cashed){
+          document.getElementById('crashMsg').textContent = `Crashed at ${crashPoint.toFixed(2)}x — lost ${fmt(bet)} TC`;
+          document.getElementById('crashMsg').className = 'msg lose';
+        }
+        startBtn.disabled = false;
+        cashoutBtn.disabled = true;
+        return;
+      }
+      requestAnimationFrame(tick);
+    }
+    requestAnimationFrame(tick);
+  });
+
+  cashoutBtn.addEventListener('click', ()=>{
+    if(!crashState || !crashState.running || crashState.cashed) return;
+    crashState.cashed = true;
+    crashState.running = false;
+    const payout = crashState.bet * crashState.mult;
+    setBalance(state.balance + payout, {flash:true});
+    multEl.className = 'crash-mult cashed';
+    document.getElementById('crashMsg').textContent = `Cashed out at ${crashState.mult.toFixed(2)}x — won ${fmt(payout - crashState.bet)} TC`;
+    document.getElementById('crashMsg').className = 'msg win';
+    startBtn.disabled = false;
+    cashoutBtn.disabled = true;
+  });
+}
+
+/* ---------------- Towers ---------------- */
+const TOWER_ROWS = 8;
+const TOWER_DIFFS = {
+  easy:   { cols:4, bombs:1, label:'Easy' },
+  medium: { cols:3, bombs:1, label:'Medium' },
+  hard:   { cols:2, bombs:1, label:'Hard' },
+};
+let towerState = null;
+
+function towersView(){
+  return `
+    <div class="panel">
+      <div class="panel-head">
+        <h2>🗼 Towers</h2>
+        <div class="stat">${TOWER_ROWS} rows. Pick a safe tile each row to climb and grow your multiplier.</div>
+      </div>
+      <div class="tower-setup">
+        ${betControlsHtml('towerBet', 100)}
+        <div class="field">
+          <div class="field-label">Difficulty</div>
+          <div class="diff-pick">
+            <button class="diff-btn selected" data-diff="easy">Easy</button>
+            <button class="diff-btn" data-diff="medium">Medium</button>
+            <button class="diff-btn" data-diff="hard">Hard</button>
+          </div>
+        </div>
+        <button class="btn btn-volt" id="towerStartBtn">Start climb</button>
+        <button class="btn btn-ghost" id="towerCashoutBtn" disabled>Cash out</button>
+      </div>
+      <div class="stat-row" style="margin-bottom:16px;">
+        <div class="stat">Current multiplier<b id="towerMult">1.00x</b></div>
+        <div class="stat">Row<b id="towerRow">0 / ${TOWER_ROWS}</b></div>
+        <div class="stat">Potential payout<b id="towerPotential">0</b></div>
+        <div class="stat">Profit so far<b id="towerProfit">0</b></div>
+      </div>
+      <div class="tower-board" id="towerBoard"></div>
+      <div class="msg info" id="towerMsg"></div>
+    </div>
+  `;
+}
+
+function initTowers(){
+  const scope = document.getElementById('content');
+  wireChipButtons(scope, 'towerBet');
+  let difficulty = 'easy';
+  scope.querySelectorAll('.diff-btn').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      if(towerState && towerState.alive) return;
+      scope.querySelectorAll('.diff-btn').forEach(b=>b.classList.remove('selected'));
+      btn.classList.add('selected');
+      difficulty = btn.dataset.diff;
+      buildBoard(TOWER_DIFFS[difficulty]);
+      refreshRowStates();
+    });
+  });
+
+  const board = document.getElementById('towerBoard');
+  const startBtn = document.getElementById('towerStartBtn');
+  const cashoutBtn = document.getElementById('towerCashoutBtn');
+  const betInput = document.getElementById('towerBet');
+
+  function rowMultiplier(cfg){
+    return (cfg.cols / (cfg.cols - cfg.bombs)) * 0.96;
+  }
+
+  // Cumulative multiplier reached after clearing rows 0..r inclusive
+  function cumulativeMultipliers(cfg){
+    const arr = [];
+    let mult = 1;
+    for(let r=0;r<TOWER_ROWS;r++){
+      mult *= rowMultiplier(cfg);
+      arr.push(mult);
+    }
+    return arr;
+  }
+
+  function currentBet(){
+    return Math.max(0, Math.floor(parseFloat(betInput.value)) || 0);
+  }
+
+  function buildBoard(cfg){
+    board.innerHTML = '';
+    const cumMults = cumulativeMultipliers(cfg);
+    const bet = towerState ? towerState.bet : currentBet();
+    for(let r=0;r<TOWER_ROWS;r++){
+      const rowEl = document.createElement('div');
+      rowEl.className = 'tower-row';
+      rowEl.dataset.row = r;
+      const rowPayout = bet * cumMults[r];
+      for(let c=0;c<cfg.cols;c++){
+        const tile = document.createElement('div');
+        tile.className = 'tower-tile locked';
+        tile.dataset.row = r; tile.dataset.col = c;
+        tile.innerHTML = `<div class="tower-tile-val">${fmt(rowPayout)}</div>`;
+        rowEl.appendChild(tile);
+      }
+      board.appendChild(rowEl);
+    }
+  }
+  buildBoard(TOWER_DIFFS[difficulty]);
+
+  betInput.addEventListener('input', ()=>{
+    if(towerState && towerState.alive) return;
+    buildBoard(TOWER_DIFFS[difficulty]);
+  });
+
+  function refreshRowStates(){
+    document.querySelectorAll('.tower-row').forEach(rowEl=>{
+      const r = parseInt(rowEl.dataset.row);
+      rowEl.classList.toggle('active', towerState && towerState.alive && r === towerState.currentRow);
+      rowEl.classList.toggle('cleared', towerState && r < towerState.currentRow);
+    });
+  }
+
+  function updateHud(){
+    const mult = towerState ? towerState.multiplier : 1;
+    const payout = towerState ? towerState.bet * mult : 0;
+    document.getElementById('towerMult').textContent = mult.toFixed(2)+'x';
+    document.getElementById('towerRow').textContent = `${towerState ? towerState.currentRow : 0} / ${TOWER_ROWS}`;
+    document.getElementById('towerPotential').textContent = towerState ? fmt(payout) : 0;
+    document.getElementById('towerProfit').textContent = (towerState && towerState.currentRow>0) ? '+'+fmt(payout - towerState.bet) : '0';
+  }
+
+  startBtn.addEventListener('click', ()=>{
+    const bet = getBet('towerBet','towerMsg');
+    if(bet === null) return;
+    const cfg = TOWER_DIFFS[difficulty];
+    setBalance(state.balance - bet);
+    towerState = { bet, difficulty, currentRow:0, multiplier:1, alive:true, bombCols:[] };
+    for(let r=0;r<TOWER_ROWS;r++){
+      const bombs = new Set();
+      while(bombs.size < cfg.bombs) bombs.add(Math.floor(Math.random()*cfg.cols));
+      towerState.bombCols.push(bombs);
+    }
+    buildBoard(cfg);
+    scope.querySelectorAll('.tower-tile').forEach(tile=>{
+      tile.classList.remove('locked');
+      tile.addEventListener('click', onTowerTileClick);
+    });
+    refreshRowStates();
+    updateHud();
+    startBtn.disabled = true;
+    cashoutBtn.disabled = false;
+    document.getElementById('towerMsg').textContent = 'Climb started — pick a tile in the bottom row.';
+    document.getElementById('towerMsg').className = 'msg info';
+  });
+
+  function onTowerTileClick(e){
+    if(!towerState || !towerState.alive) return;
+    const row = parseInt(e.currentTarget.dataset.row);
+    const col = parseInt(e.currentTarget.dataset.col);
+    if(row !== towerState.currentRow) return;
+
+    const cfg = TOWER_DIFFS[towerState.difficulty];
+    const rowEl = e.currentTarget.parentElement;
+    const isBomb = towerState.bombCols[row].has(col);
+    const rowPayout = towerState.bet * towerState.multiplier * rowMultiplier(cfg);
+
+    rowEl.querySelectorAll('.tower-tile').forEach(t=>{
+      const c = parseInt(t.dataset.col);
+      const valEl = t.querySelector('.tower-tile-val');
+      if(towerState.bombCols[row].has(c)){
+        t.classList.add('bomb');
+        t.innerHTML = `<div class="tower-tile-icon">✕</div>`;
+      } else {
+        t.classList.add('safe');
+        t.innerHTML = `<div class="tower-tile-icon">💎</div><div class="tower-tile-val">${fmt(rowPayout)}</div>`;
+      }
+    });
+
+    if(isBomb){
+      towerState.alive = false;
+      const msg = document.getElementById('towerMsg');
+      msg.textContent = `Hit the trap tile on row ${row+1} — lost ${fmt(towerState.bet)} TC`;
+      msg.className = 'msg lose';
+      startBtn.disabled = false;
+      cashoutBtn.disabled = true;
+      refreshRowStates();
+    } else {
+      towerState.multiplier *= rowMultiplier(cfg);
+      towerState.currentRow++;
+      updateHud();
+      refreshRowStates();
+      if(towerState.currentRow >= TOWER_ROWS){
+        towerCashOut(true);
+      }
+    }
+  }
+
+  function towerCashOut(clearedAll){
+    if(!towerState || !towerState.alive || towerState.currentRow === 0){
+      document.getElementById('towerMsg').textContent = 'Climb at least one row before cashing out.';
+      document.getElementById('towerMsg').className = 'msg info';
+      return;
+    }
+    const payout = towerState.bet * towerState.multiplier;
+    setBalance(state.balance + payout, {flash:true});
+    const msg = document.getElementById('towerMsg');
+    msg.textContent = clearedAll
+      ? `Cleared the tower! Won ${fmt(payout - towerState.bet)} TC`
+      : `Cashed out at row ${towerState.currentRow} (${towerState.multiplier.toFixed(2)}x) — won ${fmt(payout - towerState.bet)} TC`;
+    msg.className = 'msg win';
+    towerState.alive = false;
+    scope.querySelectorAll('.tower-tile.locked, .tower-tile:not(.safe):not(.bomb)').forEach(t=>t.classList.add('locked'));
+    startBtn.disabled = false;
+    cashoutBtn.disabled = true;
+    refreshRowStates();
+  }
+
+  cashoutBtn.addEventListener('click', ()=> towerCashOut(false));
+}
+
+/* ---------------- Cases ---------------- */
+const CASES = {
+  bronze: {
+    name:'Bronze Case', icon:'🥉', price:500,
+    items:[
+      {name:'Digital Sports Watch', type:'watch', icon:'⌚', value:150, weight:40},
+      {name:'Steel Field Watch', type:'watch', icon:'⌚', value:400, weight:30},
+      {name:'Chrono Two-Tone Watch', type:'watch', icon:'⌚', value:900, weight:15, rarity:'rare'},
+      {name:'Compact City Car', type:'car', icon:'🚗', value:2500, weight:10, rarity:'rare'},
+      {name:'Vintage Roadster', type:'car', icon:'🚙', value:6000, weight:4, rarity:'epic'},
+      {name:'Aurora Hypercar', type:'car', icon:'🏎️', value:25000, weight:1, rarity:'epic'},
+    ]
+  },
+  silver: {
+    name:'Silver Case', icon:'🥈', price:2000,
+    items:[
+      {name:'Leather Dress Watch', type:'watch', icon:'⌚', value:600, weight:35},
+      {name:'Diver Pro Watch', type:'watch', icon:'⌚', value:1500, weight:30},
+      {name:'Skeleton Gold Watch', type:'watch', icon:'⌚', value:3500, weight:15, rarity:'rare'},
+      {name:'Sedan GT', type:'car', icon:'🚗', value:8000, weight:12, rarity:'rare'},
+      {name:'Coupe Turbo', type:'car', icon:'🚙', value:15000, weight:6, rarity:'epic'},
+      {name:'Apex Supercar', type:'car', icon:'🏎️', value:60000, weight:2, rarity:'epic'},
+    ]
+  },
+  gold: {
+    name:'Gold Case', icon:'🥇', price:10000,
+    items:[
+      {name:'Titanium Chrono', type:'watch', icon:'⌚', value:3000, weight:35},
+      {name:'Platinum Diver', type:'watch', icon:'⌚', value:7000, weight:28},
+      {name:'Diamond Bezel Watch', type:'watch', icon:'⌚', value:15000, weight:15, rarity:'rare'},
+      {name:'Performance SUV', type:'car', icon:'🚙', value:30000, weight:12, rarity:'rare'},
+      {name:'Track Coupe', type:'car', icon:'🚗', value:55000, weight:7, rarity:'epic'},
+      {name:'Meteor Hypercar', type:'car', icon:'🏎️', value:250000, weight:3, rarity:'epic'},
+    ]
+  },
+  diamond: {
+    name:'Diamond Case', icon:'💎', price:50000,
+    items:[
+      {name:'Solid Gold Watch', type:'watch', icon:'⌚', value:15000, weight:35},
+      {name:'Tourbillon Watch', type:'watch', icon:'⌚', value:40000, weight:25, rarity:'rare'},
+      {name:'Grand Complication', type:'watch', icon:'⌚', value:80000, weight:15, rarity:'rare'},
+      {name:'Luxury Sedan', type:'car', icon:'🚗', value:120000, weight:13, rarity:'epic'},
+      {name:'Exotic Supercar', type:'car', icon:'🏎️', value:300000, weight:8, rarity:'epic'},
+      {name:'One-of-One Hypercar', type:'car', icon:'🏆', value:1500000, weight:4, rarity:'epic'},
+    ]
+  },
+};
+
+function weightedPick(items){
+  const total = items.reduce((s,i)=>s+i.weight,0);
+  let r = Math.random()*total;
+  for(const item of items){
+    if(r < item.weight) return item;
+    r -= item.weight;
+  }
+  return items[items.length-1];
+}
+
+function casesView(){
+  const caseCardsHtml = Object.entries(CASES).map(([key, c])=>{
+    const values = c.items.map(i=>i.value);
+    return `
+      <div class="case-card" data-case="${key}">
+        <div class="case-icon">${c.icon}</div>
+        <div class="case-name">${c.name}</div>
+        <div class="case-price">${fmt(c.price)} TC <span class="cad">$${chipsToCad(c.price)} CAD</span></div>
+        <div class="case-range">Items: ${fmt(Math.min(...values))}–${fmt(Math.max(...values))} TC</div>
+      </div>
+    `;
+  }).join('');
+
+  return `
+    <div class="panel">
+      <div class="panel-head">
+        <h2>🎁 Cases</h2>
+        <div class="stat">Pick a case, open it, and the item's chip value is credited to your balance.</div>
+      </div>
+      <div class="case-grid" id="caseGrid">${caseCardsHtml}</div>
+
+      <div id="caseOpenArea" style="display:none;">
+        <div class="panel-head">
+          <h2 id="selectedCaseName" style="font-size:17px;"></h2>
+          <button class="btn btn-volt" id="openCaseBtn">Open case</button>
+        </div>
+        <div class="reel-wrap">
+          <div class="reel-marker"></div>
+          <div class="reel-track" id="reelTrack"></div>
+        </div>
+        <div class="case-result" id="caseResult">
+          <div class="cr-name" id="crName"></div>
+          <div class="cr-value" id="crValue"></div>
+          <div class="cr-cad" id="crCad"></div>
+        </div>
+        <table class="item-pool-table" id="itemPoolTable"></table>
+      </div>
+      <div class="msg info" id="casesMsg"></div>
+    </div>
+  `;
+}
+
+function initCases(){
+  const grid = document.getElementById('caseGrid');
+  const openArea = document.getElementById('caseOpenArea');
+  const selectedNameEl = document.getElementById('selectedCaseName');
+  const openBtn = document.getElementById('openCaseBtn');
+  const track = document.getElementById('reelTrack');
+  const resultEl = document.getElementById('caseResult');
+  const poolTable = document.getElementById('itemPoolTable');
+  let selectedCase = null;
+  let opening = false;
+
+  grid.querySelectorAll('.case-card').forEach(card=>{
+    card.addEventListener('click', ()=>{
+      if(opening) return;
+      selectedCase = card.dataset.case;
+      grid.querySelectorAll('.case-card').forEach(c=>c.classList.remove('selected'));
+      card.classList.add('selected');
+      const c = CASES[selectedCase];
+      selectedNameEl.textContent = `${c.icon} ${c.name} — ${fmt(c.price)} TC ($${chipsToCad(c.price)} CAD)`;
+      openArea.style.display = 'block';
+      resultEl.classList.remove('show');
+      track.innerHTML = '';
+      track.style.transition = 'none';
+      track.style.transform = 'translateX(0)';
+      renderPoolTable(c);
+      document.getElementById('casesMsg').textContent = '';
+    });
+  });
+
+  function renderPoolTable(c){
+    const total = c.items.reduce((s,i)=>s+i.weight,0);
+    poolTable.innerHTML = `
+      <tr><th>Item</th><th>Type</th><th>Value</th><th>Odds</th></tr>
+      ${c.items.map(i=>`
+        <tr>
+          <td>${i.icon} ${i.name}</td>
+          <td class="odds">${i.type}</td>
+          <td>${fmt(i.value)} TC <span class="odds">(${chipsToCad(i.value)} CAD)</span></td>
+          <td class="odds">${(i.weight/total*100).toFixed(1)}%</td>
+        </tr>
+      `).join('')}
+    `;
+  }
+
+  openBtn.addEventListener('click', ()=>{
+    if(opening || !selectedCase) return;
+    const c = CASES[selectedCase];
+    const msg = document.getElementById('casesMsg');
+    if(c.price > state.balance){
+      msg.textContent = "You don't have enough chips to open that case.";
+      msg.className = 'msg lose';
+      return;
+    }
+    opening = true;
+    openBtn.disabled = true;
+    setBalance(state.balance - c.price);
+    resultEl.classList.remove('show');
+    msg.textContent = '';
+
+    const winner = weightedPick(c.items);
+    const ITEM_W = 120;
+    const REEL_LEN = 40;
+    const WIN_INDEX = 33;
+    const reelItems = [];
+    for(let i=0;i<REEL_LEN;i++){
+      reelItems.push(i === WIN_INDEX ? winner : weightedPick(c.items));
+    }
+
+    track.innerHTML = reelItems.map(it => `
+      <div class="reel-item ${it.rarity||''}">
+        <div class="ri-icon">${it.icon}</div>
+        <div class="ri-name">${it.name}</div>
+        <div class="ri-value">${fmt(it.value)} TC</div>
+      </div>
+    `).join('');
+
+    const wrapWidth = track.parentElement.clientWidth;
+    const jitter = (Math.random()*60 - 30);
+    const targetX = -(WIN_INDEX * ITEM_W + ITEM_W/2 - wrapWidth/2) + jitter;
+
+    track.style.transition = 'none';
+    track.style.transform = 'translateX(0px)';
+    // force reflow so the transition kicks in on next frame
+    void track.offsetWidth;
+    requestAnimationFrame(()=>{
+      track.style.transition = 'transform 4.2s cubic-bezier(0.12, 0.75, 0.15, 1)';
+      track.style.transform = `translateX(${targetX}px)`;
+    });
+
+    setTimeout(()=>{
+      setBalance(state.balance + winner.value, {flash:true});
+      document.getElementById('crName').textContent = `${winner.icon} ${winner.name}`;
+      document.getElementById('crValue').textContent = `+${fmt(winner.value)} TC credited`;
+      document.getElementById('crCad').textContent = `$${chipsToCad(winner.value)} CAD`;
+      resultEl.classList.add('show');
+      opening = false;
+      openBtn.disabled = false;
+    }, 4300);
+  });
+}
+
+/* ---------------- Init ---------------- */
+loadPersisted().then(render);
+if(!window.storage) render();
+</script>
+</body>
+</html>
